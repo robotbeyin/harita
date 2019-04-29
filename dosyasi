@@ -1,0 +1,741 @@
+
+String voice;
+#include <SoftwareSerial.h>
+
+SoftwareSerial mySerial(0, 1); // RX, TX
+#include <LiquidCrystal.h>
+
+
+//               (Rs, E, D4, D5, D6 ,D7)
+LiquidCrystal lcd(4 , 5, 6 , 7 , 8 , 9);
+
+const int x_deger = A0;
+const int y_deger = A1;
+const int secim = A2;
+const int basla = A3;
+
+int buton_basla = 0;
+int buton_secim = 0;
+int sol_dirPin = 13;
+int sol_stepperPin = 12;
+
+int sag_dirPin = 10;
+int sag_stepperPin = 11;
+int cisim = 0;
+int basla_cisim = 0;
+
+
+int x_konum = 0;
+int y_konum = 0;
+int bir_x_konum = 0;
+int bir_y_konum = 0;
+
+int iki_x_konum = 0;
+int iki_y_konum = 0;
+
+int uc_x_konum = 0;
+int uc_y_konum = 0;
+
+
+int bir_x_konum_kayit = 0;
+int bir_y_konum_kayit = 0;
+
+int iki_x_konum_kayit = 0;
+int iki_y_konum_kayit = 0;
+
+int uc_x_konum_kayit = 0;
+int uc_y_konum_kayit = 0;
+
+int iki_hiz = 0;
+int uc_hiz = 0;
+int bir_hiz = 0;
+
+int iki_hizi = 0;
+int uc_hizi = 0;
+int bir_hizi = 0;
+int hiz_bir = 0;
+int hiz_iki = 0;
+int hiz_uc = 0;
+#define led 3
+#define buzzer 2
+void setup() {
+  mySerial.begin(38400);
+  pinMode(led, OUTPUT);
+  pinMode(buzzer, OUTPUT);
+
+  pinMode(sol_dirPin, OUTPUT);
+  pinMode(sol_stepperPin, OUTPUT);
+
+  pinMode(sag_dirPin, OUTPUT);
+  pinMode(sag_stepperPin, OUTPUT);
+
+  lcd.begin(16, 2);
+  lcd.clear();
+  lcd.setCursor (0, 0);
+  lcd.println("  HARITA ROBOT  ");
+  lcd.setCursor (0, 1);
+  lcd.println("    PROJESI     ");
+  delay(1000);
+  lcd.clear();
+}
+
+void loop() {
+
+  buton_secim = analogRead(secim);
+  buton_basla = analogRead(basla);
+
+
+  int x_konum = analogRead(x_deger);
+  int y_konum = analogRead(y_deger);
+
+
+
+  if (buton_secim > 500)
+  {
+    cisim = cisim + 1;
+    if (cisim > 3)
+    {
+      cisim = 0 ;
+    } delay(500);
+  }
+  if (buton_basla > 500)
+  {
+
+    cisim = 4;
+    basla_cisim = basla_cisim + 1;
+
+    if (basla_cisim > 2)
+    {
+      basla_cisim = 0 ;
+    } delay(500);
+  }
+
+  //-------------------------------------------------
+
+  while (basla_cisim == 1)
+  {
+
+
+    buton_secim = analogRead(secim);
+    buton_basla = analogRead(basla);
+
+    int x_konum = analogRead(x_deger);
+    int degerler = map(abs(x_konum), 0, 1024, 0, 3);
+
+
+    if (degerler == 0)
+    {
+      if ((bir_x_konum_kayit < 1) && (bir_y_konum_kayit < 1))
+      {
+        lcd.setCursor (0, 0);
+        lcd.println("1Koordinat KAYIT");
+        lcd.setCursor (0, 1);  lcd.print("  Kayit    Yok   ");
+        delay(100);
+        lcd.clear();
+      }
+
+      else
+      {
+        lcd.setCursor (0, 0);
+        lcd.println("1-");
+        lcd.setCursor (2, 0);  lcd.print("X = ");
+        lcd.setCursor (6, 0 ); lcd.print(bir_x_konum_kayit);
+        lcd.setCursor (8, 0);  lcd.print("Y = ");
+        lcd.setCursor (13, 0 ); lcd.print(bir_y_konum_kayit);
+
+        bir_hiz = analogRead(y_deger);
+        bir_hizi = map(abs(bir_hiz), 0, 1024, 100, 1000);
+        hiz_bir = bir_hizi;
+        lcd.setCursor (0, 1);
+        lcd.print("Motor HIZI = ");
+        lcd.print(hiz_bir);
+        lcd.print("   ");
+
+        delay(100);
+        lcd.clear();
+      }
+    }
+
+
+    if (degerler == 1)
+    {
+      if ((iki_x_konum_kayit < 1) && (iki_y_konum_kayit < 1))
+
+      { lcd.setCursor (0, 0);
+        lcd.println("2Koordinat KAYIT");
+        lcd.setCursor (0, 1);  lcd.print("  Kayit    Yok   ");
+        delay(100);
+        lcd.clear();
+      }
+
+      else
+      {
+        lcd.setCursor (0, 0);
+        lcd.println("2-");
+        lcd.setCursor (2, 0);  lcd.print("X = ");
+        lcd.setCursor (6, 0 ); lcd.print(iki_x_konum_kayit);
+        lcd.setCursor (8, 0);  lcd.print("Y = ");
+        lcd.setCursor (13, 0 ); lcd.print(iki_y_konum_kayit);
+        iki_hiz = analogRead(y_deger);
+        iki_hizi = map(abs(iki_hiz), 0, 1024, 100, 1000);
+        hiz_iki = iki_hizi;
+        lcd.setCursor (0, 1);
+        lcd.print("Motor HIZI = ");
+        lcd.print(hiz_iki);
+        lcd.print("   ");
+
+        delay(100);
+        lcd.clear();
+      }
+    }
+
+
+    if (degerler == 2)
+    {
+      if ((uc_x_konum_kayit < 1) && (uc_y_konum_kayit < 1))
+
+      {
+        lcd.setCursor (0, 0);
+        lcd.println("3Koordinat KAYIT");
+        lcd.setCursor (0, 1);  lcd.print("  Kayit    Yok   ");
+        delay(100);
+        lcd.clear();
+      }
+
+      else
+      {
+        lcd.setCursor (0, 0);
+        lcd.println("3-");
+        lcd.setCursor (2, 0);  lcd.print("X = ");
+        lcd.setCursor (6, 0 ); lcd.print(uc_x_konum_kayit);
+        lcd.setCursor (8, 0);  lcd.print("Y = ");
+        lcd.setCursor (13, 0 ); lcd.print(uc_y_konum_kayit);
+        uc_hiz = analogRead(y_deger);
+        uc_hizi = map(abs(uc_hiz), 0, 1024, 100, 1000);
+        hiz_uc = uc_hizi;
+        lcd.setCursor (0, 1);
+        lcd.print("Motor HIZI = ");
+        lcd.print(hiz_uc);
+        lcd.print("   ");
+
+        delay(100);
+        lcd.clear();
+      }
+    }
+
+    if (buton_secim > 500)
+    {
+      cisim = cisim + 1;
+      if (cisim > 3)
+      {
+        cisim = 0 ;
+      } delay(500);
+    }
+    if (buton_basla > 500)
+    {
+
+      cisim = 4;
+      basla_cisim = basla_cisim + 1;
+
+      if (basla_cisim > 2)
+      {
+        basla_cisim = 0 ;
+      } delay(500);
+    }
+  }
+
+  //------------------------------------------------------TELEFON İLE YÖNLENDİRMEK --------------------------------------------------------------------------------
+  while (basla_cisim == 2)
+  {
+    buton_secim = analogRead(secim);
+    buton_basla = analogRead(basla);
+    lcd.setCursor (0, 0);
+    lcd.println("TELEFONDAN KOMUT ");
+    lcd.setCursor (0, 1);
+    lcd.println("   BEKLENIYOR    ");
+    if (buton_basla > 500)
+    {
+      basla_cisim = basla_cisim + 1;
+      if (basla_cisim > 2)
+      {
+        basla_cisim = 0 ;
+      }
+      delay(500);
+    }
+    delay(500);
+    lcd.clear();
+    while (mySerial.available()) { //Okumak için kullanılabilir bayt olup olmadığını kontrol et
+      delay(10); //10 milisaniye bekle
+      char c = mySerial.read(); //Seri okuma
+      if (c == '#') {
+        break; // # tespit edildiğinde döngüden çık
+      }
+      voice += c; //Ses = ses + c Steno
+    }
+
+    if (voice.length() > 0) {
+
+
+      if ((voice == "birinci hedef") || (voice == "*mavi"))
+      {
+        digitalWrite(led, HIGH);
+        lcd.setCursor (0, 0);
+        lcd.println("1.Hedefe gidiyor");
+        lcd.setCursor (0, 1);
+        lcd.print("X=");
+        lcd.setCursor (2, 1);
+        lcd.print(bir_x_konum_kayit);
+        lcd.setCursor (4, 1);
+        lcd.print("--");
+        lcd.setCursor (6, 1);
+        lcd.print("Y=");
+        lcd.setCursor (8, 1);
+        lcd.print(bir_y_konum_kayit);
+        lcd.setCursor (9, 1);
+        lcd.print("HIZ ");
+        lcd.setCursor (13, 1);
+        lcd.print(hiz_bir);
+        for (int adim = 0; adim < bir_x_konum_kayit ; adim++)
+        {
+          for (int c = 0; c < 3636 ; c++) // 50 cm ileri
+          {
+
+            digitalWrite(sol_dirPin, HIGH);
+            digitalWrite(sag_dirPin, LOW);
+            digitalWrite(sol_stepperPin, HIGH);
+            digitalWrite(sag_stepperPin, HIGH);
+            delayMicroseconds(hiz_bir);
+            digitalWrite(sol_stepperPin, LOW);
+            digitalWrite(sag_stepperPin, LOW);
+            delayMicroseconds(hiz_bir);
+          }
+        }
+        delay (2000);
+
+        for (int c = 0; c < 783 ; c++) // 90 derece sol
+        {
+
+          digitalWrite(sol_dirPin, HIGH);
+          digitalWrite(sag_dirPin, HIGH);
+          digitalWrite(sol_stepperPin, HIGH);
+          digitalWrite(sag_stepperPin, HIGH);
+          delayMicroseconds(hiz_bir);
+          digitalWrite(sol_stepperPin, LOW);
+          digitalWrite(sag_stepperPin, LOW);
+          delayMicroseconds(hiz_bir);
+        }
+        delay (2000);
+
+        for (int adim = 0; adim < bir_y_konum_kayit ; adim++)
+        {
+          for (int c = 0; c < 3636 ; c++) // 50 cm ileri
+          {
+
+            digitalWrite(sol_dirPin, HIGH);
+            digitalWrite(sag_dirPin, LOW);
+            digitalWrite(sol_stepperPin, HIGH);
+            digitalWrite(sag_stepperPin, HIGH);
+            delayMicroseconds(hiz_bir);
+            digitalWrite(sol_stepperPin, LOW);
+            digitalWrite(sag_stepperPin, LOW);
+            delayMicroseconds(hiz_bir);
+          }
+        }
+        delay (2000);
+        lcd.clear();
+        lcd.setCursor (0, 0);
+        lcd.println("1.Hedefe Ulasti ");
+        lcd.setCursor (0, 1);
+        lcd.println("----------------");
+
+        digitalWrite(buzzer, HIGH);
+        delay(1000);
+
+        digitalWrite(buzzer, LOW);
+        digitalWrite(led, LOW);
+      }// 1.hedef sonu
+      //---------------------------------------------------------------------------------------
+      else if ((voice == "ikinci hedef") || (voice == "*kırmızı")) {
+
+           digitalWrite(led, HIGH);
+        lcd.setCursor (0, 0);
+        lcd.println("2.Hedefe gidiyor");
+        lcd.setCursor (0, 1);
+        lcd.print("X=");
+        lcd.setCursor (2, 1);
+        lcd.print(iki_x_konum_kayit);
+        lcd.setCursor (4, 1);
+        lcd.print("--");
+        lcd.setCursor (6, 1);
+        lcd.print("Y=");
+        lcd.setCursor (8, 1);
+        lcd.print(iki_y_konum_kayit);
+        lcd.setCursor (9, 1);
+        lcd.print("HIZ ");
+        lcd.setCursor (13, 1);
+        lcd.print(hiz_iki);
+        for (int adim = 0; adim < iki_x_konum_kayit ; adim++)
+        {
+          for (int c = 0; c < 3636 ; c++) // 50 cm ileri
+          {
+
+            digitalWrite(sol_dirPin, HIGH);
+            digitalWrite(sag_dirPin, LOW);
+            digitalWrite(sol_stepperPin, HIGH);
+            digitalWrite(sag_stepperPin, HIGH);
+            delayMicroseconds(hiz_iki);
+            digitalWrite(sol_stepperPin, LOW);
+            digitalWrite(sag_stepperPin, LOW);
+            delayMicroseconds(hiz_iki);
+          }
+        }
+        delay (2000);
+
+        for (int c = 0; c < 783 ; c++) // 90 derece sol
+        {
+
+          digitalWrite(sol_dirPin, HIGH);
+          digitalWrite(sag_dirPin, HIGH);
+          digitalWrite(sol_stepperPin, HIGH);
+          digitalWrite(sag_stepperPin, HIGH);
+          delayMicroseconds(hiz_iki);
+          digitalWrite(sol_stepperPin, LOW);
+          digitalWrite(sag_stepperPin, LOW);
+          delayMicroseconds(hiz_iki);
+        }
+        delay (2000);
+
+        for (int adim = 0; adim < iki_y_konum_kayit ; adim++)
+        {
+          for (int c = 0; c < 3636 ; c++) // 50 cm ileri
+          {
+
+            digitalWrite(sol_dirPin, HIGH);
+            digitalWrite(sag_dirPin, LOW);
+            digitalWrite(sol_stepperPin, HIGH);
+            digitalWrite(sag_stepperPin, HIGH);
+            delayMicroseconds(hiz_iki);
+            digitalWrite(sol_stepperPin, LOW);
+            digitalWrite(sag_stepperPin, LOW);
+            delayMicroseconds(hiz_iki);
+          }
+        }
+        delay (2000);
+        lcd.clear();
+        lcd.setCursor (0, 0);
+        lcd.println("2.Hedefe Ulasti ");
+        lcd.setCursor (0, 1);
+        lcd.println("----------------");
+        delay(1000);
+
+        digitalWrite(buzzer, HIGH);
+        delay(1000);
+
+        digitalWrite(buzzer, LOW);
+        digitalWrite(led, LOW);
+      }
+      //----------------------------------------------------------------------------------------
+      else if ((voice == "sona git" )|| (voice == "*yeşil"))
+      
+      {
+
+           digitalWrite(led, HIGH);
+        lcd.setCursor (0, 0);
+        lcd.println("3.Hedefe gidiyor");
+        lcd.setCursor (0, 1);
+        lcd.print("X=");
+        lcd.setCursor (2, 1);
+        lcd.print(uc_x_konum_kayit);
+        lcd.setCursor (4, 1);
+        lcd.print("--");
+        lcd.setCursor (6, 1);
+        lcd.print("Y=");
+        lcd.setCursor (8, 1);
+        lcd.print(uc_y_konum_kayit);
+        lcd.setCursor (9, 1);
+        lcd.print("HIZ ");
+        lcd.setCursor (13, 1);
+        lcd.print(hiz_uc);
+        for (int adim = 0; adim < uc_x_konum_kayit ; adim++)
+        {
+          for (int c = 0; c < 3636 ; c++) // 50 cm ileri
+          {
+
+            digitalWrite(sol_dirPin, HIGH);
+            digitalWrite(sag_dirPin, LOW);
+            digitalWrite(sol_stepperPin, HIGH);
+            digitalWrite(sag_stepperPin, HIGH);
+            delayMicroseconds(hiz_uc);
+            digitalWrite(sol_stepperPin, LOW);
+            digitalWrite(sag_stepperPin, LOW);
+            delayMicroseconds(hiz_uc);
+          }
+        }
+        delay (2000);
+
+        for (int c = 0; c < 783 ; c++) // 90 derece sol
+        {
+
+          digitalWrite(sol_dirPin, HIGH);
+          digitalWrite(sag_dirPin, HIGH);
+          digitalWrite(sol_stepperPin, HIGH);
+          digitalWrite(sag_stepperPin, HIGH);
+          delayMicroseconds(hiz_uc);
+          digitalWrite(sol_stepperPin, LOW);
+          digitalWrite(sag_stepperPin, LOW);
+          delayMicroseconds(hiz_uc);
+        }
+        delay (2000);
+
+        for (int adim = 0; adim < uc_y_konum_kayit ; adim++)
+        {
+          for (int c = 0; c < 3636 ; c++) // 50 cm ileri
+          {
+
+            digitalWrite(sol_dirPin, HIGH);
+            digitalWrite(sag_dirPin, LOW);
+            digitalWrite(sol_stepperPin, HIGH);
+            digitalWrite(sag_stepperPin, HIGH);
+            delayMicroseconds(hiz_uc);
+            digitalWrite(sol_stepperPin, LOW);
+            digitalWrite(sag_stepperPin, LOW);
+            delayMicroseconds(hiz_uc);
+          }
+        }
+        delay (2000);
+        lcd.clear();
+        lcd.setCursor (0, 0);
+        lcd.println("3.Hedefe Ulasti ");
+        lcd.setCursor (0, 1);
+        lcd.println("----------------");
+        delay(1000);
+
+        digitalWrite(buzzer, HIGH);
+        delay(1000);
+
+        digitalWrite(buzzer, LOW);
+        digitalWrite(led, LOW);
+      }
+
+      else
+      {
+        lcd.clear();
+        lcd.setCursor (0, 0);
+        lcd.print(voice); lcd.print("                ");
+        lcd.setCursor (0, 1);
+        lcd.println("  HATALI KOMUT  ");
+
+        digitalWrite(led, HIGH);
+        digitalWrite(buzzer, HIGH);
+        delay(1000);
+        digitalWrite(buzzer, LOW);
+        digitalWrite(led, LOW);
+        delay (1000); digitalWrite(led, HIGH);
+        digitalWrite(buzzer, HIGH);
+        delay(1000);
+        digitalWrite(buzzer, LOW);
+        digitalWrite(led, LOW);
+        delay (2000);
+      }
+
+
+
+
+
+      voice = "";
+    }
+
+
+    //--------------------------------------------------------------TELEFON YAZILIM--------------------------------------------------------------------------
+
+
+    //---------------------
+  }
+  //------------------------------------------------------------TELEFON KOMUT SON--------------------------------------------------------------------------
+  while (cisim == 0)
+  {
+
+    buton_secim = analogRead(secim);
+    buton_basla = analogRead(basla);
+    lcd.setCursor (0, 0);
+    lcd.println("Koord. Giriniz  ");
+
+
+    if (buton_secim > 500)
+    {
+      cisim = cisim + 1;
+      if (cisim > 3)
+      {
+        cisim = 0 ;
+      } delay(500);
+    }
+    if (buton_basla > 500)
+    {
+
+      cisim = 4;
+      basla_cisim = basla_cisim + 1;
+
+      if (basla_cisim > 2)
+      {
+        basla_cisim = 0 ;
+      } delay(500);
+    }
+
+    buton_secim = analogRead(secim);
+    delay(500);
+    lcd.clear();
+
+
+  }
+
+  while (cisim == 1)
+  {
+
+
+    buton_secim = analogRead(secim);
+    buton_basla = analogRead(basla);
+    int x_konum = analogRead(x_deger);
+    int y_konum = analogRead(y_deger);
+    int bir_x_konum = map(abs(x_konum), 0, 1024, 0, 11);
+    int bir_y_konum = map(abs(y_konum), 0, 1024, 0, 11);
+    bir_x_konum_kayit = bir_x_konum ;
+    bir_y_konum_kayit = bir_y_konum ;
+
+    lcd.setCursor (0, 0);
+    lcd.println(" 1.Koordinat     ");
+    lcd.setCursor (0, 1);  lcd.print("X = ");
+    lcd.setCursor (4, 1 ); lcd.print(bir_x_konum);
+    lcd.setCursor (7, 1);  lcd.print("Y = ");
+    lcd.setCursor (12, 1 ); lcd.print(bir_y_konum);
+
+
+    if (buton_secim > 500)
+    {
+      cisim = cisim + 1;
+      if (cisim > 3)
+      {
+        cisim = 0 ;
+      } delay(500);
+    }
+    if (buton_basla > 500)
+    {
+
+      cisim = 4;
+      basla_cisim = basla_cisim + 1;
+
+      if (basla_cisim > 2)
+      {
+        basla_cisim = 0 ;
+      } delay(500);
+    }
+
+    buton_secim = analogRead(secim);
+    delay(500);
+    lcd.clear();
+
+
+  }
+
+
+  while (cisim == 2)
+  {
+    buton_secim = analogRead(secim);
+    buton_basla = analogRead(basla);
+
+    int x_konum = analogRead(x_deger);
+    int y_konum = analogRead(y_deger);
+
+    int iki_x_konum = map(abs(x_konum), 0, 1024, 0, 11);
+    int iki_y_konum = map(abs(y_konum), 0, 1024, 0, 11);
+
+    iki_x_konum_kayit = iki_x_konum ;
+    iki_y_konum_kayit = iki_y_konum ;
+
+    lcd.setCursor (0, 0);
+    lcd.println(" 2.Koordinat     ");
+    lcd.setCursor (0, 1);  lcd.print("X = ");
+    lcd.setCursor (4, 1 ); lcd.print(iki_x_konum);
+    lcd.setCursor (7, 1);  lcd.print("Y = ");
+    lcd.setCursor (12, 1 ); lcd.print(iki_y_konum);
+
+
+    if (buton_secim > 500)
+    {
+      cisim = cisim + 1;
+      if (cisim > 3)
+      {
+        cisim = 0 ;
+      } delay(500);
+    }
+    if (buton_basla > 500)
+    {
+
+      cisim = 4;
+      basla_cisim = basla_cisim + 1;
+
+      if (basla_cisim > 2)
+      {
+        basla_cisim = 0 ;
+      } delay(500);
+    }
+
+    buton_secim = analogRead(secim);
+    delay(500);
+    lcd.clear();
+
+
+  }
+
+  while (cisim == 3)
+  {
+
+    buton_secim = analogRead(secim);
+    buton_basla = analogRead(basla);
+    int x_konum = analogRead(x_deger);
+    int y_konum = analogRead(y_deger);
+
+    int uc_x_konum = map(abs(x_konum), 0, 1024, 0, 11);
+    int uc_y_konum = map(abs(y_konum), 0, 1024, 0, 11);
+
+
+    uc_x_konum_kayit = uc_x_konum ;
+    uc_y_konum_kayit = uc_y_konum ;
+
+    lcd.setCursor (0, 0);
+    lcd.println(" 3.Koordinat     ");
+    lcd.setCursor (0, 1);  lcd.print("X = ");
+    lcd.setCursor (4, 1 ); lcd.print(uc_x_konum);
+    lcd.setCursor (7, 1);  lcd.print("Y = ");
+    lcd.setCursor (12, 1 ); lcd.print(uc_y_konum);
+
+
+    if (buton_secim > 500)
+    {
+      cisim = cisim + 1;
+      if (cisim > 3)
+      {
+        cisim = 0 ;
+      } delay(500);
+    }
+    if (buton_basla > 500)
+    {
+
+      cisim = 4;
+      basla_cisim = basla_cisim + 1;
+
+      if (basla_cisim > 2)
+      {
+        basla_cisim = 0 ;
+      }
+      delay(500);
+    }
+
+    buton_secim = analogRead(secim);
+    delay(500);
+    lcd.clear();
+
+
+  }
+  //-----------------------------------------------
+
+}
